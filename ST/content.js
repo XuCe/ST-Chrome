@@ -441,7 +441,8 @@ function loadPlay(result){
 
 /**********专辑页操作************/
 var aid=0;
-if(window.location.href.indexOf("www.songtaste.com/user/album/")>=0||window.location.href.indexOf("www.songtaste.com/album/")>=0){
+//http://songtaste.com/user/album/a609220 取数字即可 前面a无意
+if(window.location.href.indexOf("songtaste.com/user/album/")>=0||window.location.href.indexOf("songtaste.com/album/")>=0){
 	clearTimeout(timeid);
 	timeid=setTimeout(function(){
 		var regex = /[1-9]\d*/;
@@ -450,6 +451,7 @@ if(window.location.href.indexOf("www.songtaste.com/user/album/")>=0||window.loca
 		if(typeof match != "undefined" && null != match){
 			aid=match[0];
 		}
+		alert(aid);
 		if($("#albumdownloads").length==0){
 			$(".song_fun_btn").append('<input type="button" value="下载本专辑歌曲" id="albumdownloads" class="graycol"/>');
 		}
@@ -466,10 +468,12 @@ $(document).on("click","#albumdownloads",function(){
 			success:function(result){
 				var result=result.replace("dm.st.getDetailBcakAl","");
 				result=eval(result);
-				if(result.data.length>0){
+				if(result.data!=null&&result.data.length>0){
 					GetInfo(result.data[0].songid,downloadfile);
 					downtemp=1;
 					albumdown(result.data);
+				}else{
+					alert(result.msg);
 				}
 			}
 		});
