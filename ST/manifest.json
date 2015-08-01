@@ -1,0 +1,20 @@
+{
+  "name": "ST",
+  "description": "ST Music",
+  "version": "1.1",
+  "background": {
+    "scripts": ["jquery-1.11.3.min.js","background.js"]
+  },
+  "permissions": [
+    "downloads", "<all_urls>","tabs","http://www.songtaste.com/*", "http://songtaste.com/*"
+  ],
+"content_scripts":[{
+	"matches":["http://www.songtaste.com/*", "http://songtaste.com/*"],
+	"js":["jquery-1.11.3.min.js","content.js"],
+  "css":["content_style.css"],
+	"run_at": "document_start",  
+	"all_frames": true   
+}],
+  "manifest_version": 2,
+  "web_accessible_resources": ["download.png","play.png","link.png","heart.png","heart-o.png","download-b.png","heart-r.png","heart-r-o.png"]
+}
