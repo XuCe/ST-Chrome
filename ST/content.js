@@ -451,7 +451,6 @@ if(window.location.href.indexOf("songtaste.com/user/album/")>=0||window.location
 		if(typeof match != "undefined" && null != match){
 			aid=match[0];
 		}
-		alert(aid);
 		if($("#albumdownloads").length==0){
 			$(".song_fun_btn").append('<input type="button" value="下载本专辑歌曲" id="albumdownloads" class="graycol"/>');
 		}

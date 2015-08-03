@@ -21,3 +21,57 @@ chrome.runtime.onMessage.addListener(  function(request, sender, sendResponse) {
 });
 
 
+var bUseChromeDownloadAPI = chrome.downloads ? true : false;
+var bSelfQuit = false;
+function connectNativeApp() {
+    bSelfQuit = false;
+    var hostName = "com.xunlei.thunder";
+    port = chrome.runtime.connectNative(hostName);
+    port.onMessage.addListener(onNativeMessage);
+}
+
+function onNativeMessage(msg){
+	if (message.funcName == "GetPluginEnabled") {
+        var ret = message.result;
+		GetMoniterDynamicLinks();
+		GetBlackListWebsites();
+		GetBlackListPages();
+		GetIsMonitorProtocol("MonitorEmule");
+		GetIsMonitorProtocol("MonitorMagnet");
+		GetIsMonitorProtocol("MonitorTradition");
+		GetIsMonitorProtocol("MonitorIE");
+		GetFiters("MonitorDemain");
+		GetFiters("FilterDemain");
+		GetFiters("MonitorFileExt");         
+    }
+}
+
+
+function sendNativeMsg(msg) {
+    if (port != null) {
+        port.postMessage(msg);
+        console.log("sendNativeMsg msg:%s sucess!", msg);
+    }
+    else {
+        console.log("sendNativeMsg failed!");
+    }
+}
+
+function SendQuitChrome() {
+    bSelfQuit = true;
+    var sendQuitChrome = { "funcName": "ChromeQuit", "paramters": [] };
+    sendNativeMsg(sendQuitChrome);
+    port = null;    
+}
+
+function InitPluginEnabled()
+{	
+    var getEnabled = { "funcName": "GetPluginEnabled", "paramters": [] };
+
+    sendNativeMsg(getEnabled);
+}
+
+connectNativeApp();
+var downLoadByThunder = { "funcName": "DownLoadByThunder", "paramters": ["https://www.baidu.com/img/bdlogo.png"] };
+sendNativeMsg(downLoadByThunder);
+SendQuitChrome();
