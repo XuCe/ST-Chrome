@@ -70,14 +70,17 @@ function ClickE(name)
 //获取歌曲信息
 function GetInfo(id,callback){
 	var userid=getCookie("CookID");
-	var url="http://www.songtaste.com/api/android/songurl.php?songid="+id;
+	var url="http://www.songtaste.com/api/android/songurl.php";
 	if(undefined!=userid){
-		url="http://www.songtaste.com/api/android/songurl.php?songid="+id+"&uid="+userid+"&version=ST0.2.0.05_A1.6 HTTP/1.1";
+		url="http://www.songtaste.com/api/android/songurl.php?uid="+userid+"&version=ST0.2.0.05_A1.6 HTTP/1.1";
 	}
 	$.ajax({
 		url:url,
+		data:{songid:id},
 		dataType:"xml",
-		success:callback
+		success:function(result){
+			callback(result,id)
+		}
 	})
 }
 
@@ -124,7 +127,7 @@ $(document).on("click",".downloads",function(){
 });
 
 //下载操作
-function downloadfile(result){
+function downloadfile(result,id){
 	result=parseXml(result);
 	if(result!=null){
 		var timestamp = new Date().getTime();
@@ -135,6 +138,9 @@ function downloadfile(result){
 		}else{
 			obj.name=result.singer_name+"-"+result.song_name;
 		}
+		if(result.singer_name==""&&result.song_name==""){
+			obj.name=GetSongName(id);
+		}
 		var url=result.url.split("?")[0].split("/");
 		obj.url=url[url.length-1];
 		chrome.runtime.sendMessage({cmd: obj});
@@ -142,6 +148,20 @@ function downloadfile(result){
 	}
 }
 
+function GetSongName(id){
+	var title="";
+	$.ajax({
+		url:"http://www.songtaste.com/song/"+id,
+		dataType:"html",
+		async:false,
+		success:function(result){
+			var rex=new RegExp("\<title\>(.*)\<\/title\>?");
+			var str=result.match(rex)[0];
+			title=(RegExp.$1).replace("  试听 -- SongTaste 用音乐倾听彼此","");
+		}
+	});
+	return title;
+}
 /************单手歌曲*****************/
 var id=0;
 if($("img[src='http://image.songtaste.com/imghandle/tmp/songa.jpg']").length>0){
@@ -172,7 +192,6 @@ function check_code() {
 	if(re == 'error') return false;
 	return true;
 }
-
 
 //顶歌
 $(document).on("click","#ratesong",function(){
