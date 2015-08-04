@@ -409,9 +409,15 @@ if($(".closemusic").length>0){
 	var rex= /=(.*)/
 	var ids=(rex.exec(window.location.href)+"").replace("=","").split(",").unique();
 	arr=ids;
-	for(var i=0;i<ids.length;i++){
-		createLi(ids[i])
+	//若网址＝后面跟的是box 怎么说明是音乐盒 否则为连续播放界面 
+	if(arr.length==1&&arr[0].indexOf("box")>=0){
+		musicbox();
+	}else{
+		for(var i=0;i<ids.length;i++){
+			createLi(ids[i])
+		}
 	}
+	
 }
 //根据id 创建一条歌曲记录
 function createLi(id){
@@ -507,4 +513,38 @@ function albumdown(arr){
 			albumdown(arr);
 		},3000);
 	}
+}
+
+/**********音乐盒************/
+//http://www.songtaste.com/home.php?tag=box&curpage=1
+function musicbox(){
+	var userid=getCookie("CookID");
+	if(undefined==userid){
+		noLogin();
+		window.close();
+	}else{
+		//匹配id和歌名 正则
+		clearTimeout(timeid);
+		timeid=setTimeout(function() {
+			GetMusicBoxList(1);	
+		}, 200);
+	}
+}
+
+function GetMusicBoxList(page){
+	var boxrex=/\<td\>\<input type=checkbox name=\"sel\[\]\" value=([1-9]\d*) .*<\/td\>/g;
+	//var regex=new RegExp(boxrex,"g");
+	$.ajax({
+		url:"http://www.songtaste.com/home.php?tag=box&curpage="+page,
+		dataType:"html",
+		success:function(result){
+			result=result.match(boxrex);
+			arr=[];
+			for(var i=0;i<result.length;i++){
+				var id=/[1-9]\d*/.exec(result[i]);
+				createLi(id[0]);
+				arr.push(id[0]);
+			}
+		}
+	});
 }
