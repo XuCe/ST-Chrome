@@ -126,6 +126,28 @@ $(document).on("click",".downloads",function(){
 	},200);
 });
 
+//通过歌曲主页 获取url 以及歌名
+function GetHomeMusicToUrlAndTitle(id,callback){
+	$.ajax({
+		url:"http://www.songtaste.com/song/"+id,
+		dataType:"html",
+		success:function(result){
+			var rex=new RegExp("\<title\>(.*)\<\/title\>?");
+			result.match(rex)[0];
+			var title=(RegExp.$1).replace("  试听 -- SongTaste 用音乐倾听彼此","");
+			/playmedia1\('playicon','player',\r*\s*\n*'(.*?)',.*\);/.exec(result);
+			var strURL=RegExp.$1;
+			$.ajax({
+				url:"http://www.songtaste.com/time.php",
+				data:{str:strURL,sid:id,t:0},
+				success:function(result){
+					callback(result,title);
+				}
+			})
+		}
+	});
+}
+
 //下载操作
 function downloadfile(result,id){
 	result=parseXml(result);
@@ -148,6 +170,7 @@ function downloadfile(result,id){
 	}
 }
 
+//获取歌名信息
 function GetSongName(id){
 	var title="";
 	$.ajax({
@@ -288,6 +311,12 @@ function oneMusic(result){
 	if(result!=null){
 		var str='<audio src="'+result.url+'" autoplay="true" controls="true" id="audio" loop="loop"></audio>'+"<img src='"+chrome.extension.getURL("download.png")+"' class='downloads' data-id='"+id+"' title='下载'>";
 		$(".fir_rec").next("p").html(str);
+		$("#audio")[0].addEventListener("error",function(){
+			GetHomeMusicToUrlAndTitle(id,function(result){
+				$("#audio").attr("src",result);
+				$("#audio")[0].play();
+			})
+		},false);
 		var heartimg=result.iscollection==1?chrome.extension.getURL("heart-r.png"):chrome.extension.getURL("heart-r-o.png");
 		var title=result.iscollection==1?"取消收藏":"收藏";
 		$(".mid_tit").css({"margin-left":0,"width":"315px","display":"inline-block"}).after("<img src='"+heartimg+"' id='heart' data-id='"+id+"' title＝'"+title+"'/>");	
@@ -417,8 +446,8 @@ if($(".closemusic").length>0){
 			createLi(ids[i])
 		}
 	}
-	
 }
+
 //根据id 创建一条歌曲记录
 function createLi(id){
 	var userid=getCookie("CookID");
@@ -429,8 +458,8 @@ function createLi(id){
 	$.ajax({
 		url:url,
 		dataType:"xml",
-		success:function(result){
-			result=parseXml(result);
+		success:function(data){
+			var result=parseXml(data);
 			if(result!=null){
 				var obj=new Object();
 				if(result.singer_name==""||result.singer_name==null||undefined==result.singer_name){
@@ -442,7 +471,8 @@ function createLi(id){
 				obj.hearttitle=result.iscollection==1?"取消收藏":"收藏";
 				$(".st_main ul").append("<li id='"+id+"'><a href='javascript:void(0);' title＝'"+obj.name+"'>"+($("li").length+1)+"."+obj.name+"</a><img src='"+chrome.extension.getURL("download.png")+"' class='downloads' title='下载' data-id='"+id+"'><img src='"+chrome.extension.getURL("link.png")+"' class='link'><img src='"+obj.heartimg+"' class='heart' data-id='"+id+"' title＝'"+obj.hearttitle+"'></li>");
 				if($(".st_main li").length==1){
-					GetInfo(id,loadPlay)
+					//GetInfo(id,loadPlay)
+					loadPlay(data);
 					$(".st_main ul li:eq(0)").addClass("cur");
 				}
 			}
@@ -460,7 +490,9 @@ function loadPlay(result){
 	audio.addEventListener('ended', function () {  
 	    $("#nextIcon").click();
 	}, false);
-	
+	audio.addEventListener("error",function(){
+		$("#nextIcon").click();
+	},false)
 }
 
 
@@ -526,25 +558,80 @@ function musicbox(){
 		//匹配id和歌名 正则
 		clearTimeout(timeid);
 		timeid=setTimeout(function() {
+			arr=[];
+			//开始匹配获取数据
 			GetMusicBoxList(1);	
 		}, 200);
 	}
 }
 
+//获取每页音乐盒数据 
 function GetMusicBoxList(page){
-	var boxrex=/\<td\>\<input type=checkbox name=\"sel\[\]\" value=([1-9]\d*) .*<\/td\>/g;
+	var boxrex=/\<td\>\<input type=checkbox name=\"sel\[\]\" value=([1-9]\d*) .*<\/td\>/g;//匹配有id的那个td
 	//var regex=new RegExp(boxrex,"g");
 	$.ajax({
 		url:"http://www.songtaste.com/home.php?tag=box&curpage="+page,
 		dataType:"html",
 		success:function(result){
+			var isNextPage=/\<a href='\/home.php\?tag=box\&curpage=.\d*'>\&raquo;<\/a>/.test(result);//判断有下一页
 			result=result.match(boxrex);
-			arr=[];
 			for(var i=0;i<result.length;i++){
-				var id=/[1-9]\d*/.exec(result[i]);
-				createLi(id[0]);
-				arr.push(id[0]);
+				var id=/[1-9]\d*/.exec(result[i]);//匹配数字找到id
+				createLi(id[0]);//创建li
+				arr.push(id[0]);//将id放入数组 用于下载
+				if(arr.length>=200){//音乐盒只能存200条数据
+					return;
+				}
+			}
+			if(isNextPage){
+				GetMusicBoxList(page++);
 			}
 		}
 	});
+}
+
+/**********推荐歌曲或者收藏歌曲下载************/
+if(window.location.href.indexOf("songtaste.com/home.php")>=0){
+	var name="chkSongID";
+	if($("#subnav .active:eq(0)").text()=="推荐"){
+		$(".song_fun_btn").append('<input type="button" value="下载勾选歌曲" class="graycol" id="HomeDownload">');
+	}
+	if($("#subnav .active:eq(0)").text()=="收藏"){
+		$(".mid_tit").prev().append('<input type="button" value="下载勾选歌曲" class="graycol" style="margin-top:19px;" id="HomeDownload">');
+	}
+	if($("#subnav .active:eq(0)").text()=="音乐盒"){
+		$(".pages").next().find("ul").before('<input type="button" value="下载勾选歌曲" class="grayform" id="HomeDownload">');
+		name="sel[]";
+	}
+	if($("#HomeDownload").length>0){
+		$("#HomeDownload").click(function(){
+			DownloadHtmlSongList(name);
+		})
+	}
+}
+
+function DownloadHtmlSongList(name){
+	var userid=getCookie("CookID");
+	if(undefined==userid){
+		noLogin();
+	}else{
+		var data=new Array();
+		if($("input[name='"+name+"']:checked").length>0){
+			$("input[name='"+name+"']:checked").each(function(){
+				data.push({songid:$(this).val()});
+			});	
+		}else{
+			if(confirm("并无选中歌曲，是否下载本页全部歌曲？")){
+				$("input[name='"+name+"']").each(function(){
+					data.push({songid:$(this).val()});
+				});	
+			}
+		}
+		if(data.length>0){
+			GetInfo(data[0].songid,downloadfile);
+			downtemp=1;
+			albumdown(data);
+		}
+	}
+	
 }
