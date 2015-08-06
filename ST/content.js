@@ -66,6 +66,24 @@ function ClickE(name)
         document.getElementById(name).dispatchEvent(evt);  
     }
 } 
+/************接受消息*****************/
+chrome.runtime.onMessage.addListener(  function(request, sender, sendResponse) { 
+	var cmd=request.cmd;
+	GetHomeMusicToUrlAndTitle(cmd,function(result,title){
+		if(result!=null){
+			var timestamp = new Date().getTime();
+			$("body").append("<a href='"+result+"' download='temp' id='down"+"_"+timestamp+"' style='display:none;'>download</a>");
+			var obj=new Object();
+			obj.name=title;
+			var url=result.split("?")[0].split("/");
+			obj.url=url[url.length-1].split(".")[0];
+			obj.id=cmd;
+			console.log(obj);
+			chrome.runtime.sendMessage({cmd: obj});
+			ClickE("down"+"_"+timestamp);
+		}
+	});
+});
 /************公共方法*****************/
 //获取歌曲信息
 function GetInfo(id,callback){
@@ -164,7 +182,8 @@ function downloadfile(result,id){
 			obj.name=GetSongName(id);
 		}
 		var url=result.url.split("?")[0].split("/");
-		obj.url=url[url.length-1];
+		obj.url=url[url.length-1].split(".")[0];
+		obj.id=id;
 		chrome.runtime.sendMessage({cmd: obj});
 		ClickE("down"+"_"+timestamp);
 	}
@@ -597,7 +616,8 @@ if(window.location.href.indexOf("songtaste.com/home.php")>=0){
 		$(".song_fun_btn").append('<input type="button" value="下载勾选歌曲" class="graycol" id="HomeDownload">');
 	}
 	if($("#subnav .active:eq(0)").text()=="收藏"){
-		$(".mid_tit").prev().append('<input type="button" value="下载勾选歌曲" class="graycol" style="margin-top:19px;" id="HomeDownload">');
+		$(".mid_tit").prev().append('<input type="button" value="下载勾选歌曲" class="graycol" style="margin-top:19px;cursor: pointer;" id="HomeDownload">');
+		$(".mid_tit").prev().css("overflow","hidden");
 	}
 	if($("#subnav .active:eq(0)").text()=="音乐盒"){
 		$(".pages").next().find("ul").before('<input type="button" value="下载勾选歌曲" class="grayform" id="HomeDownload">');
