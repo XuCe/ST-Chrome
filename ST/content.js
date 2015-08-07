@@ -530,7 +530,9 @@ if(window.location.href.indexOf("songtaste.com/user/album/")>=0||window.location
 		if($("#albumdownloads").length==0){
 			$(".song_fun_btn").append('<input type="button" value="下载本专辑歌曲" id="albumdownloads" class="graycol"/>');
 		}
+		$(".song_fun_btn").css("width","416px");
 	},200);
+	$(".graycol:last").after('<input type="button" value="下载勾选歌曲" class="graycol" id="HomeDownload">');
 }
 
 //多文件下载按钮
@@ -610,8 +612,8 @@ function GetMusicBoxList(page){
 }
 
 /**********推荐歌曲或者收藏歌曲下载************/
+var name="chkSongID";
 if(window.location.href.indexOf("songtaste.com/home.php")>=0){
-	var name="chkSongID";
 	if($("#subnav .active:eq(0)").text()=="推荐"){
 		$(".song_fun_btn").append('<input type="button" value="下载勾选歌曲" class="graycol" id="HomeDownload">');
 	}
@@ -623,12 +625,49 @@ if(window.location.href.indexOf("songtaste.com/home.php")>=0){
 		$(".pages").next().find("ul").before('<input type="button" value="下载勾选歌曲" class="grayform" id="HomeDownload">');
 		name="sel[]";
 	}
+}
+
+//别人眼中我的主页 勾选下载
+if(window.location.href.indexOf("songtaste.com/user")>=0){
+	if($("#subnav .active:eq(0)").text()=="音乐"||$("#subnav .active:eq(0)").text()=="试听记录"){
+		$(".graycol:last").after('<input type="button" value="下载勾选歌曲" class="graycol" id="HomeDownload">');
+	}
+	
+}
+
+//音乐分类勾选下载
+if(window.location.href.indexOf("songtaste.com/music/catsong")>=0){
+	if($("#subnav .active:eq(0)").text()=="音乐分类"){
+		$(".graycol:last").after('<input type="button" value="下载勾选歌曲" class="graycol" id="HomeDownload">');
+	}
+}
+
+//排行下载
+if($("#subnav .active:eq(0)").text()=="一周排行"){
+	$(".graycol:last").after('<input type="button" value="下载勾选歌曲" class="graycol" id="HomeDownload">');
+}
+
+//标签页操作
+if(window.location.href.indexOf("songtaste.com/tag")>0&&$("#subnav .active:eq(0)").text()=="标签列表"){
+	//列表下方增加操作按钮
+	$(".u_song_tab:eq(0)").after('<div class="song_fun_btn"><input type="button" value="全 选" class="graycol" onclick="javascript:selAll(1);"><input type="button" value="连续播放" class="graycol" onclick="doMusicList()"><input type="button" value="放入音乐盒" class="graycol" onclick="addBoxList()"><input type="button" value="下载勾选歌曲" class="graycol" id="HomeDownload"></div>');
+	
+	//替换行数字 未勾选框
+	$(".u_song_tab:eq(0) .tdidx").each(function(){
+		var href=$(this).next().html();
+		var id=/[1-9]\d*/.exec(href)[0];
+		$(this).html("<input type='checkbox' name='chkSongID' value='"+id+"'>");
+	});
+}
+
+setTimeout(function(){
 	if($("#HomeDownload").length>0){
 		$("#HomeDownload").click(function(){
 			DownloadHtmlSongList(name);
 		})
 	}
-}
+},200);
+
 
 function DownloadHtmlSongList(name){
 	var userid=getCookie("CookID");

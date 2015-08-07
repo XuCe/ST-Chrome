@@ -1,7 +1,7 @@
 {
   "name": "ST",
   "description": "ST Music",
-  "version": "1.1",
+  "version": "4.001",
   "background": {
     "scripts": ["jquery-1.11.3.min.js","background.js"]
   },
