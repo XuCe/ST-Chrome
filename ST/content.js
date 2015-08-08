@@ -1,4 +1,4 @@
-/************扩展方法*****************/
+//扩展方法
 String.prototype.replaceAll = function(reallyDo, replaceWith, ignoreCase) {
     if (!RegExp.prototype.isPrototypeOf(reallyDo)) {
         return this.replace(new RegExp(reallyDo, (ignoreCase ? "gi": "g")), replaceWith);
@@ -66,7 +66,7 @@ function ClickE(name)
         document.getElementById(name).dispatchEvent(evt);  
     }
 } 
-/************接受消息*****************/
+//接受消息
 chrome.runtime.onMessage.addListener(  function(request, sender, sendResponse) { 
 	var cmd=request.cmd;
 	GetHomeMusicToUrlAndTitle(cmd,function(result,title){
@@ -84,7 +84,7 @@ chrome.runtime.onMessage.addListener(  function(request, sender, sendResponse) {
 		}
 	});
 });
-/************公共方法*****************/
+//公共方法
 //获取歌曲信息
 function GetInfo(id,callback){
 	var userid=getCookie("CookID");
@@ -204,7 +204,7 @@ function GetSongName(id){
 	});
 	return title;
 }
-/************单手歌曲*****************/
+//单手歌曲
 var id=0;
 if($("img[src='http://image.songtaste.com/imghandle/tmp/songa.jpg']").length>0){
 	$("img[src='http://image.songtaste.com/imghandle/tmp/songa.jpg']").remove();
@@ -343,7 +343,7 @@ function oneMusic(result){
 }
 
 
-/************多歌曲列表播放*****************/
+//多歌曲列表播放
 //播放器
 var audio;
 var timeid=0;
@@ -515,7 +515,7 @@ function loadPlay(result){
 }
 
 
-/**********专辑页操作************/
+//专辑页操作
 var aid=0;
 //http://songtaste.com/user/album/a609220 取数字即可 前面a无意
 if(window.location.href.indexOf("songtaste.com/user/album/")>=0||window.location.href.indexOf("songtaste.com/album/")>=0){
@@ -568,7 +568,7 @@ function albumdown(arr){
 	}
 }
 
-/**********音乐盒************/
+//音乐盒
 //http://www.songtaste.com/home.php?tag=box&curpage=1
 function musicbox(){
 	var userid=getCookie("CookID");
@@ -611,7 +611,7 @@ function GetMusicBoxList(page){
 	});
 }
 
-/**********推荐歌曲或者收藏歌曲下载************/
+//推荐歌曲或者收藏歌曲下载
 var name="chkSongID";
 if(window.location.href.indexOf("songtaste.com/home.php")>=0){
 	if($("#subnav .active:eq(0)").text()=="推荐"){

@@ -23,7 +23,7 @@ chrome.downloads.onChanged.addListener(function(delta) {
 	if (!delta.state ||(delta.state.current != 'complete')) {
 		var path=delta.filename.current.split("/");
 		var name=path[path.length-1].split(".")[0];
-		id=obj[name].id;
+		var id=obj[name].id;
 		if(undefined==errobj[id]){
 			errobj[id]=name;
 			sendMsg(id)	
