@@ -450,19 +450,18 @@ function playmusic(){
 }
 
 //判断是否是列表播放
-var arr;
+var arr=new Array();
 if($(".closemusic").length>0){
 	window.resizeTo(430,673);
 	$("body").css("overflow","hidden").html("<div class='st_main'><ul></ul><div class='playpanel'><img src='"+chrome.extension.getURL("download-b.png")+"' id='moredownloads' title='下载全部歌曲'/><div class='icon' id='prevIcon'><div id='prev' class='previous'></div></div><div id='player'></div><div class='icon' id='nextIcon'><div id='next' class='next'></div></div></div>").css({"background":"#fff","padding":"0px"});
 	var rex= /=(.*)/
 	var ids=(rex.exec(window.location.href)+"").replace("=","").split(",").unique();
-	arr=ids;
 	//若网址＝后面跟的是box 怎么说明是音乐盒 否则为连续播放界面 
-	if(arr.length==1&&arr[0].indexOf("box")>=0){
+	if(ids.length==1&&ids[0].indexOf("box")>=0){
 		musicbox();
 	}else{
 		for(var i=0;i<ids.length;i++){
-			createLi(ids[i])
+			createLi(ids[i]);
 		}
 	}
 }
@@ -480,6 +479,7 @@ function createLi(id){
 		success:function(data){
 			var result=parseXml(data);
 			if(result!=null){
+				arr.push(id);
 				var obj=new Object();
 				if(result.singer_name==""||result.singer_name==null||undefined==result.singer_name){
 					obj.name=result.song_name;
@@ -488,7 +488,7 @@ function createLi(id){
 				}
 				obj.heartimg=result.iscollection==1?chrome.extension.getURL("heart.png"):chrome.extension.getURL("heart-o.png");
 				obj.hearttitle=result.iscollection==1?"取消收藏":"收藏";
-				$(".st_main ul").append("<li id='"+id+"'><a href='javascript:void(0);' title＝'"+obj.name+"'>"+($("li").length+1)+"."+obj.name+"</a><img src='"+chrome.extension.getURL("download.png")+"' class='downloads' title='下载' data-id='"+id+"'><img src='"+chrome.extension.getURL("link.png")+"' class='link'><img src='"+obj.heartimg+"' class='heart' data-id='"+id+"' title＝'"+obj.hearttitle+"'></li>");
+				$(".st_main ul").append("<li id='"+id+"'><img src='"+chrome.extension.getURL("remove.png")+"' class='remove' title='删除' data-id='"+id+"'><a href='javascript:void(0);' title＝'"+obj.name+"'><span>"+($("li").length+1)+"</span>."+obj.name+"</a><img src='"+chrome.extension.getURL("download.png")+"' class='downloads' title='下载' data-id='"+id+"'><img src='"+chrome.extension.getURL("link.png")+"' class='link'><img src='"+obj.heartimg+"' class='heart' data-id='"+id+"' title＝'"+obj.hearttitle+"'></li>");
 				if($(".st_main li").length==1){
 					//GetInfo(id,loadPlay)
 					loadPlay(data);
@@ -499,6 +499,29 @@ function createLi(id){
 	})
 }
 
+//根据下标 删除li以及数组记录
+$(document).on("click",".st_main li img.remove",function(){
+	clearTimeout(timeid);
+	var t=$(this);
+	timeid=setTimeout(function(){
+		var index=$("li").index(t.parent());
+		if(t.parent().hasClass("cur")){
+			indexPlay=index;
+			if(indexPlay==(arr.length-1)){
+				indexPlay=0;
+			}else{
+				indexPlay=indexPlay+1;
+			}
+			playmusic();
+		}
+		t.parent().remove();
+		arr.splice(index,1);
+		$(".st_main li").each(function(i){
+			$(this).find("a>span").html(i+1);
+		});
+	},200)
+});
+
 //列表加载音乐播放器 并绑定失败事件 播放完成事件
 function loadPlay(result){
 	result=parseXml(result);
@@ -507,10 +530,14 @@ function loadPlay(result){
 	audio = document.getElementById('audio');
 	audio.loop = false;
 	audio.addEventListener('ended', function () {  
+		indexPlay
 	    $("#nextIcon").click();
 	}, false);
 	audio.addEventListener("error",function(){
-		$("#nextIcon").click();
+		GetHomeMusicToUrlAndTitle($(".st_main ul li.cur").attr("id"),function(result){
+			$("#audio").attr("src",result);
+			$("#audio")[0].play();
+		})
 	},false)
 }
 

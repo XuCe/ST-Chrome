@@ -15,7 +15,7 @@
 }
 
 .st_main ul li a{
-	width: 306px;
+	width: 289px;
 	overflow: hidden;
   	text-overflow: ellipsis;
   	white-space: nowrap;
@@ -59,6 +59,14 @@
 .downloads{
 	margin-left: 3px;
 	cursor: pointer;
+}
+
+.st_main li img.remove{
+    float:left;
+    margin-left: -12px;
+    margin-top: 9px;
+    width:13px;
+    padding:0 2px;
 }
 
 .st_main li img{

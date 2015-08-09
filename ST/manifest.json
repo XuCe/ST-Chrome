@@ -1,7 +1,7 @@
 {
   "name": "ST",
   "description": "ST Music",
-  "version": "4.001",
+  "version": "4",
   "background": {
     "scripts": ["jquery-1.11.3.min.js","background.js"]
   },
@@ -16,5 +16,5 @@
 	"all_frames": true   
 }],
   "manifest_version": 2,
-  "web_accessible_resources": ["download.png","play.png","link.png","heart.png","heart-o.png","download-b.png","heart-r.png","heart-r-o.png"]
+  "web_accessible_resources": ["download.png","play.png","remove.png","link.png","heart.png","heart-o.png","download-b.png","heart-r.png","heart-r-o.png"]
 }
