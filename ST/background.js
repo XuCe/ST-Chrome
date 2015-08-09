@@ -11,7 +11,7 @@ chrome.tabs.onUpdated.addListener(checkForValidUrl);
 chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
 	var mime=item.filename.split(".");
 	var name=item.filename;
-	if(mime[mime.length-1]!="html"){
+	if(mime[mime.length-1]!="htm"&&mime[mime.length-1]!="html"){
 		name=(obj[mime[mime.length-2]].name.replace(/\.+/,"。"))+"."+mime[mime.length-1];
 	}
 	suggest({filename:name,
@@ -21,7 +21,12 @@ chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
 
 chrome.downloads.onChanged.addListener(function(delta) {
 	if (!delta.state ||(delta.state.current != 'complete')) {
-		var path=delta.filename.current.split("/");
+		var path=new Array();
+		if(delta.filename.current.indexOf("\\")>=0){
+			path=delta.filename.current.split("\\");
+		}else{
+			path=delta.filename.current.split("/");
+		}
 		var name=path[path.length-1].split(".")[0];
 		var id=obj[name].id;
 		if(undefined==errobj[id]){
